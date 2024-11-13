@@ -25,7 +25,9 @@ library(patchwork)  # for combining multiple ggplots in one panel plot
 barplot(rep(1,10), col = grey.colors(10))
 barplot(rep(1,10), col = rev(topo.colors(10))) # rev turns the scale arround
 barplot(rep(1,10), col = rev(terrain.colors(10)))
-my_colous <-c("red","White")
+my_colours <-c("red","White", "blue")
+barplot(rep(1,3),col = rev(my_colours), horiz = T)
+
 library(RColorBrewer) 
 RColorBrewer::display.brewer.all()
 barplot(rep(1,10), col = RColorBrewer::brewer.pal(10, "Spectral"))
@@ -66,25 +68,39 @@ elevation<-terra::rast("./2023_elevation/elevation_90m.tif")
 
 # inspect the data 
 class(protected_areas)
-
+class(elevation)
+plot(protected_areas)
+plot(elevation)
+plot(protected_areas, add =T)
 
 # set the limits of the map to show (xmin, xmax, ymin, ymax in utm36 coordinates)
 xlimits<-c(550000,900000)
 ylimits<-c(9600000,9950000)
 
 # plot the woody biomass map that you want to predict
-new_extent <- ext(xlimits,ylimits)
-cropped_raster <- crop(woodybiom,new_extent)
-raster_df <- as.data.frame(cropped_raster, xy = TRUE)
+ggplot() + 
+  tidyterra::geom_spatraster(data = woodybiom) +
+  scale_fill_gradientn(colours = rev(terrain.colors(6)), #gradientn allows you to makeup #n yourself and also the colours! 
+                       limits=c(0.77,6.55),
+                       oob=squish,
+                       name = "TBA/ha") +
+  tidyterra::geom_spatvector(data=protected_areas,
+                             fill = NA,
+                             linewidth=0.8)+
+  tidyterra::geom_spatvector(data =studyarea,
+                             fill = NA,
+                             color = "red",
+                             linewidth =0.8) +
+  tidyterra::geom_spatvector(data = lakes,
+                             color = "lightblue")+
+  tidyterra::geom_spatvector(data = rivers,
+                             color = "blue")
 
-
-p1 <- ggplot(raster_df,aes(x = x, y = y, fill = TBA_gam_utm36s)) +
-      geom_raster()+
-      scale_fill_viridis_c() +
-      coord_cartesian(xlim = xlimits, ylim = ylimits) +  # Set spatial extents
-      theme_minimal()
-p1
 # plot the rainfall map
+ggplot()+
+  tidyterra::geom_spatraster(data = rainfall) +
+  scale_fill_gradientn(colours= rev(viridis::viridis(10)),
+                      name = "total yearly, mm")
 
 # plot the elevation map
 
