@@ -3,7 +3,7 @@
 
 rm(list = ls())
 # set the working directory where your GIS data are located
-setwd("G:/Shared drives/_Org OlffLab/Teaching/APCE/APCE2024/APCE2024GIS")
+setwd("C:/Users/bob-e/OneDrive/Documenten/APCE2024/apce2024gis")
 
 # restore the libraries of the project 
 renv::restore()
@@ -25,6 +25,7 @@ library(patchwork)  # for combining multiple ggplots in one panel plot
 barplot(rep(1,10), col = grey.colors(10))
 barplot(rep(1,10), col = rev(topo.colors(10))) # rev turns the scale arround
 barplot(rep(1,10), col = rev(terrain.colors(10)))
+my_colous <-c("red","White")
 library(RColorBrewer) 
 RColorBrewer::display.brewer.all()
 barplot(rep(1,10), col = RColorBrewer::brewer.pal(10, "Spectral"))
@@ -40,6 +41,7 @@ barplot(rep(1,10), col = rev(wesanderson::wes_palette("Zissou1", 10, type = "con
 pal_zissou1<-rev(wesanderson::wes_palette("Zissou1", 10, type = "continuous"))
 pal_zissou2<-wesanderson::wes_palette("Zissou1", 10, type = "continuous")
 pal_zissou1
+barplot(rep(1,10), col = pal_zissou2) 
 
 # load the vector data for the whole ecosystem
 sf::st_layers("./2022_protected_areas/protected_areas.gpkg")
@@ -71,7 +73,17 @@ xlimits<-c(550000,900000)
 ylimits<-c(9600000,9950000)
 
 # plot the woody biomass map that you want to predict
+new_extent <- ext(xlimits,ylimits)
+cropped_raster <- crop(woodybiom,new_extent)
+raster_df <- as.data.frame(cropped_raster, xy = TRUE)
 
+
+p1 <- ggplot(raster_df,aes(x = x, y = y, fill = TBA_gam_utm36s)) +
+      geom_raster()+
+      scale_fill_viridis_c() +
+      coord_cartesian(xlim = xlimits, ylim = ylimits) +  # Set spatial extents
+      theme_minimal()
+p1
 # plot the rainfall map
 
 # plot the elevation map
